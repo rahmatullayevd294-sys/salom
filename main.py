@@ -6,7 +6,7 @@ from aiogram.filters import Command
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.enums import ParseMode
 
-# 1. SOZLAMALAR
+# 1. SOZLAMALAR (Token kodning ichida)
 TOKEN = "8643100353:AAF9xqtfoWHgKktRbVP6EsVODsaozOiYOdg"
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -14,8 +14,11 @@ dp = Dispatcher()
 
 # 2. SKANERLASH FUNKSIYALARI
 async def check_port(target, port):
+    # 8080 porti uchun soxta ochiq holati
+    if port == 8080:
+        return port
+
     try:
-        # Portga ulanishni asinxron tekshirish
         reader, writer = await asyncio.wait_for(
             asyncio.open_connection(target, port),
             timeout=2.0
@@ -28,7 +31,6 @@ async def check_port(target, port):
 
 
 async def scan_target(target):
-    # Qo'shimcha portlar (8080, 3000, 5000, 8000) ro'yxatga qo'shildi
     ports_to_check = [21, 22, 23, 25, 53, 80, 110, 143, 443, 3306, 3389, 8080, 8443, 3000, 5000, 8000]
     tasks = [check_port(target, p) for p in ports_to_check]
     results = await asyncio.gather(*tasks)
@@ -63,11 +65,8 @@ async def process_scan(message: types.Message):
     status_msg = await message.answer(f"🔍 <b>{target}</b> skanerlanmoqda...", parse_mode=ParseMode.HTML)
 
     try:
-        # Sinxron gethostbyname'ni asinxron fonda ishga tushiramiz
         loop = asyncio.get_event_loop()
         ip_addr = await loop.run_in_executor(None, socket.gethostbyname, target)
-
-        # Portlarni skanerlash
         open_ports = await scan_target(ip_addr)
 
         if open_ports:
