@@ -28,8 +28,8 @@ async def check_port(target, port):
 
 
 async def scan_target(target):
-    # Asosiy portlar ro'yxati
-    ports_to_check = [21, 22, 23, 25, 53, 80, 110, 143, 443, 3306, 3389, 8080, 8443]
+    # Qo'shimcha portlar (8080, 3000, 5000, 8000) ro'yxatga qo'shildi
+    ports_to_check = [21, 22, 23, 25, 53, 80, 110, 143, 443, 3306, 3389, 8080, 8443, 3000, 5000, 8000]
     tasks = [check_port(target, p) for p in ports_to_check]
     results = await asyncio.gather(*tasks)
     return [p for p in results if p is not None]
@@ -63,7 +63,7 @@ async def process_scan(message: types.Message):
     status_msg = await message.answer(f"🔍 <b>{target}</b> skanerlanmoqda...", parse_mode=ParseMode.HTML)
 
     try:
-        # Sinxron gethostbyname'ni asinxron fonda ishga tushiramiz (bot qotib qolmasligi uchun)
+        # Sinxron gethostbyname'ni asinxron fonda ishga tushiramiz
         loop = asyncio.get_event_loop()
         ip_addr = await loop.run_in_executor(None, socket.gethostbyname, target)
 
